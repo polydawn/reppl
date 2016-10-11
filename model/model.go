@@ -29,6 +29,27 @@ func (p *Project) PutManualName(name string, ware rdef.Ware) {
 	}
 }
 
+func (p *Project) PutEval(rr *rdef.RunRecord) {
+	var savedAny bool
+	for name, value := range rr.Results {
+		if (name[0] >= 'a' && name[0] <= 'z') ||
+			(name[0] >= 'A' && name[0] <= 'Z') {
+			savedAny = true
+		}
+		p.Names[name] = ReleaseRecord{value.Ware, rr.HID}
+
+	}
+	// If no interesting results were saved, bail;
+	//  we don't need to save this record, nor potentially evict old ones.
+	// REVIEW: this means we won't memoize evals that didn't have named results.
+	if savedAny == false {
+		return
+	}
+	p.RunRecords[rr.HID] = rr
+	p.Memos[rr.FormulaHID] = rr.HID
+	p.retainFilter()
+}
+
 func (p *Project) retainFilter() {
 
 }
