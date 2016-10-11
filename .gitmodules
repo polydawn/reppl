@@ -1,0 +1,12 @@
+[submodule ".gopath/src/go.polydawn.net/repeatr"]
+	path = .gopath/src/go.polydawn.net/repeatr
+	url = https://github.com/polydawn/repeatr
+[submodule ".gopath/src/go.polydawn.net/go-sup"]
+	path = .gopath/src/go.polydawn.net/go-sup
+	url = https://github.com/polydawn/go-sup
+[submodule ".gopath/src/go.polydawn.net/meep"]
+	path = .gopath/src/go.polydawn.net/meep
+	url = https://github.com/polydawn/meep
+[submodule ".gopath/src/github.com/ugorji/go"]
+	path = .gopath/src/github.com/ugorji/go
+	url = https://github.com/ugorji/go
