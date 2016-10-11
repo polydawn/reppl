@@ -61,7 +61,6 @@ func (p *Project) PutEval(rr *rdef.RunRecord) {
 func (p *Project) retainFilter() {
 	// "Sweep".  (The `Names` map is the marks.)
 	oldRunRecords := p.RunRecords
-	oldMemos := p.Memos
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
 	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Names`.
