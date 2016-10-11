@@ -29,6 +29,14 @@ func (p *Project) PutManualName(name string, ware rdef.Ware) {
 	}
 }
 
+func (p *Project) DeleteName(name string) {
+	_, hadPrev := p.Names[name]
+	if hadPrev {
+		delete(p.Names, name)
+		p.retainFilter()
+	}
+}
+
 func (p *Project) PutEval(rr *rdef.RunRecord) {
 	var savedAny bool
 	for name, value := range rr.Results {
@@ -51,5 +59,17 @@ func (p *Project) PutEval(rr *rdef.RunRecord) {
 }
 
 func (p *Project) retainFilter() {
-
+	// "Sweep".  (The `Names` map is the marks.)
+	oldRunRecords := p.RunRecords
+	oldMemos := p.Memos
+	p.RunRecords = make(map[string]*rdef.RunRecord)
+	p.Memos = make(map[string]string)
+	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Names`.
+	for _, release := range p.Names {
+		p.RunRecords[release.RunRecordHID] = oldRunRecords[release.RunRecordHID]
+	}
+	// Rebuild `Memos` index from `RunRecords`.
+	for _, runRecord := range p.RunRecords {
+		p.Memos[runRecord.FormulaHID] = runRecord.HID
+	}
 }
