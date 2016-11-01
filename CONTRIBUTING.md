@@ -1,9 +1,9 @@
 Contribution Guide
 ==================
 
-repp is an Apache-v2 licensed product.
+reppl is an Apache-v2 licensed product.
 
-We welcome and encourage community contributions to repeatr.
+We welcome and encourage community contributions to reppl.
 
 
 
