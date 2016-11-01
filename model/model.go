@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	rdef "go.polydawn.net/repeatr/api/def"
 )
 
@@ -64,8 +66,15 @@ func (p *Project) retainFilter() {
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
 	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Names`.
-	for _, release := range p.Names {
-		p.RunRecords[release.RunRecordHID] = oldRunRecords[release.RunRecordHID]
+	for name, release := range p.Names {
+		if release.RunRecordHID == "" {
+			continue // skip.  it's just a fiat release; doesn't ref anything.
+		}
+		runRecord, ok := oldRunRecords[release.RunRecordHID]
+		if !ok {
+			panic(fmt.Errorf("db integrity violation: dangling runrecord -- release %q points to %q", name, release.RunRecordHID))
+		}
+		p.RunRecords[release.RunRecordHID] = runRecord
 	}
 	// Rebuild `Memos` index from `RunRecords`.
 	for _, runRecord := range p.RunRecords {
