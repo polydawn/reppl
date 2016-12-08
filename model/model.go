@@ -37,7 +37,7 @@ func (p *Project) WriteFile(filename string) {
 	w := bufio.NewWriter(f)
 	defer w.Flush()
 
-	enc := codec.NewEncoder(w, &codec.JsonHandle{})
+	enc := codec.NewEncoder(w, &codec.JsonHandle{Indent: -1})
 	err = enc.Encode(p)
 	if err != nil {
 		panic("could not write project file")
