@@ -1,78 +1,112 @@
 package model
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
+	"os"
 
+	"github.com/ugorji/go/codec"
 	rdef "go.polydawn.net/repeatr/api/def"
 )
 
 type Project struct {
-	Names      map[string]ReleaseRecord   // map name->{ware,backstory}
+	Tags       map[string]ReleaseRecord   // map tag->{ware,backstory}
 	RunRecords map[string]*rdef.RunRecord // map rrhid->rr
 	Memos      map[string]string          // index frmhid->rrhid
 }
 
 type ReleaseRecord struct {
 	Ware         rdef.Ware
-	RunRecordHID string // blank if a name was manual
+	RunRecordHID string // blank if a tag was manual
 }
 
 func (p *Project) Init() {
-	p.Names = make(map[string]ReleaseRecord)
+	p.Tags = make(map[string]ReleaseRecord)
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
 }
 
-func (p *Project) PutManualName(name string, ware rdef.Ware) {
-	_, hadPrev := p.Names[name]
-	p.Names[name] = ReleaseRecord{ware, ""}
+func (p *Project) WriteFile(filename string) {
+	f, err := os.Create(filename)
+	if err != nil {
+		panic("error opening project file")
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	defer w.Flush()
+
+	enc := codec.NewEncoder(w, &codec.JsonHandle{})
+	err = enc.Encode(p)
+	if err != nil {
+		panic("could not write project file")
+	}
+	w.Write([]byte{'\n'})
+}
+
+func FromFile(filename string) Project {
+	f, err := os.Open(filename)
+	if err != nil {
+		panic("error opening project file")
+	}
+	defer f.Close()
+
+	r := bufio.NewReader(f)
+	p := Project{}
+	dec := codec.NewDecoder(r, &codec.JsonHandle{})
+	err = dec.Decode(&p)
+	if err != nil {
+		panic("error reading project file")
+	}
+	return p
+}
+
+func (p *Project) PutManualTag(tag string, ware rdef.Ware) {
+	_, hadPrev := p.Tags[tag]
+	p.Tags[tag] = ReleaseRecord{ware, ""}
 	if hadPrev {
 		p.retainFilter()
 	}
 }
 
-func (p *Project) DeleteName(name string) {
-	_, hadPrev := p.Names[name]
+func (p *Project) DeleteTag(tag string) {
+	_, hadPrev := p.Tags[tag]
 	if hadPrev {
-		delete(p.Names, name)
+		delete(p.Tags, tag)
 		p.retainFilter()
 	}
 }
 
-func (p *Project) PutEval(rr *rdef.RunRecord) {
-	var savedAny bool
-	for name, value := range rr.Results {
-		if (name[0] >= 'a' && name[0] <= 'z') ||
-			(name[0] >= 'A' && name[0] <= 'Z') {
-			savedAny = true
-		}
-		p.Names[name] = ReleaseRecord{value.Ware, rr.HID}
+func (p *Project) GetWareByTag(tag string) (rdef.Ware, error) {
+	_, exists := p.Tags[tag]
+	if exists {
+		return p.Tags[tag].Ware, nil
+	} else {
+		return rdef.Ware{}, errors.New("not found")
+	}
+}
 
-	}
-	// If no interesting results were saved, bail;
-	//  we don't need to save this record, nor potentially evict old ones.
-	// REVIEW: this means we won't memoize evals that didn't have named results.
-	if savedAny == false {
-		return
-	}
+func (p *Project) PutResult(tag string, resultName string, rr *rdef.RunRecord) {
+	p.Tags[tag] = ReleaseRecord{rr.Results[resultName].Ware, rr.HID}
 	p.RunRecords[rr.HID] = rr
 	p.Memos[rr.FormulaHID] = rr.HID
 	p.retainFilter()
 }
 
 func (p *Project) retainFilter() {
-	// "Sweep".  (The `Names` map is the marks.)
+	// "Sweep".  (The `Tags` map is the marks.)
 	oldRunRecords := p.RunRecords
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
-	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Names`.
-	for name, release := range p.Names {
+	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Tags`.
+	for tag, release := range p.Tags {
 		if release.RunRecordHID == "" {
 			continue // skip.  it's just a fiat release; doesn't ref anything.
 		}
 		runRecord, ok := oldRunRecords[release.RunRecordHID]
 		if !ok {
-			panic(fmt.Errorf("db integrity violation: dangling runrecord -- release %q points to %q", name, release.RunRecordHID))
+			panic(fmt.Errorf("db integrity violation: dangling runrecord -- release %q points to %q", tag, release.RunRecordHID))
 		}
 		p.RunRecords[release.RunRecordHID] = runRecord
 	}

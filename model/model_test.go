@@ -13,15 +13,15 @@ func Test(t *testing.T) {
 		proj.Init()
 
 		Convey("Putting names manually dtrt", func() {
-			proj.PutManualName("x", rdef.Ware{Hash: "a"})
-			proj.PutManualName("y", rdef.Ware{Hash: "b"})
-			So(len(proj.Names), ShouldEqual, 2)
+			proj.PutManualTag("x", rdef.Ware{Hash: "a"})
+			proj.PutManualTag("y", rdef.Ware{Hash: "b"})
+			So(len(proj.Tags), ShouldEqual, 2)
 			So(len(proj.RunRecords), ShouldEqual, 0)
 			So(len(proj.Memos), ShouldEqual, 0)
 
 			Convey("Putting colliding names dtrt", func() {
-				proj.PutManualName("x", rdef.Ware{Hash: "q"})
-				So(len(proj.Names), ShouldEqual, 2)
+				proj.PutManualTag("x", rdef.Ware{Hash: "q"})
+				So(len(proj.Tags), ShouldEqual, 2)
 				So(len(proj.RunRecords), ShouldEqual, 0)
 				So(len(proj.Memos), ShouldEqual, 0)
 			})
@@ -35,8 +35,8 @@ func Test(t *testing.T) {
 					"name1": &rdef.Result{Ware: rdef.Ware{"tar", "h1"}},
 				},
 			}
-			proj.PutEval(rr)
-			So(len(proj.Names), ShouldEqual, 1)
+			proj.PutResult("tag1", "name1", rr)
+			So(len(proj.Tags), ShouldEqual, 1)
 			Convey("...and memoizes the runRecord", func() {
 				So(len(proj.RunRecords), ShouldEqual, 1)
 				So(len(proj.Memos), ShouldEqual, 1)
