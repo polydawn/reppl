@@ -93,7 +93,7 @@ func createPinnedFormula(p *model.Project, frm rdef.Formula) rdef.Formula {
 
 func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 	rrBuf := &bytes.Buffer{}
-	cmd := Gosh("repeatr", "run", formulaFileName,
+	cmd := Gosh("repeatr", "run", "--ignore-job-exit", formulaFileName,
 		Opts{
 			Out: rrBuf,
 			Err: os.Stderr,
