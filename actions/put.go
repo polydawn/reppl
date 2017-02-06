@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli"
 	rdef "go.polydawn.net/repeatr/api/def"
 
+	"go.polydawn.net/reppl/lib/efmt"
 	"go.polydawn.net/reppl/model"
 )
 
@@ -20,7 +21,14 @@ func PutHash(c *cli.Context) error {
 	}
 	p.PutManualTag(tag, ware)
 	p.WriteFile(".reppl")
-	fmt.Println("put", tag, "=", hash)
+	fmt.Printf(
+		"%s %s %s %s %s\n",
+		efmt.AnsiWrap("reppl put", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap("hash:", efmt.Ansi_textYellow),
+		efmt.AnsiWrap(tag, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap("=", efmt.Ansi_textYellow),
+		efmt.AnsiWrap(hash, efmt.Ansi_textYellow, efmt.Ansi_underline),
+	)
 	return nil
 }
 

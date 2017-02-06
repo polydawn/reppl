@@ -14,6 +14,7 @@ import (
 	rdef "go.polydawn.net/repeatr/api/def"
 	rhitch "go.polydawn.net/repeatr/api/hitch"
 
+	"go.polydawn.net/reppl/lib/efmt"
 	"go.polydawn.net/reppl/model"
 )
 
@@ -40,9 +41,22 @@ func Eval(c *cli.Context) error {
 	// check if this formula is up to date
 	formulaHash := getHash(pinnedFrm)
 	if _, exists := p.Memos[formulaHash]; exists {
-		fmt.Println("formula already up to date!")
+		fmt.Printf(
+			"%s %s %s%s\n",
+			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
+			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+			efmt.AnsiWrap(": no op!  formula previously evaluated and results are on record.", efmt.Ansi_textYellow),
+		)
 		return nil
 	}
+	fmt.Printf(
+		"%s %s %s%s\n",
+		efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
+		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(": looks new, no memoized result!  evaluating...", efmt.Ansi_textYellow),
+	)
 
 	// write the pinned formula file as JSON
 	writeFormula(&pinnedFrm, pinFileName)
@@ -63,6 +77,13 @@ func Eval(c *cli.Context) error {
 	}
 
 	p.WriteFile(".reppl")
+	fmt.Printf(
+		"%s %s %s%s\n",
+		efmt.AnsiWrap("└─", efmt.Ansi_textYellow),
+		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(": done!  results saved.", efmt.Ansi_textYellow),
+	)
 
 	return nil
 }
@@ -98,12 +119,18 @@ func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 	cmd := Gosh("repeatr", "run", "--ignore-job-exit", formulaFileName,
 		Opts{
 			Out: rrBuf,
-			Err: os.Stderr,
+			Err: efmt.LinePrefixingWriter(
+				os.Stderr,
+				efmt.AnsiWrap("│ reppl eval >\t", efmt.Ansi_textBrightPurple),
+			),
 		},
 	).Bake()
 	cmd.Run()
 
-	fmt.Println(rrBuf.String())
+	fmt.Fprintln(efmt.LinePrefixingWriter(
+		os.Stderr,
+		efmt.AnsiWrap("│ reppl eval ∴⟩\t", efmt.Ansi_textYellow),
+	), rrBuf.String())
 	var rr rdef.RunRecord
 	dec := codec.NewDecoder(rrBuf, &codec.JsonHandle{})
 	err := dec.Decode(&rr)
