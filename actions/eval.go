@@ -41,9 +41,20 @@ func Eval(c *cli.Context) error {
 	// check if this formula is up to date
 	formulaHash := getHash(pinnedFrm)
 	if _, exists := p.Memos[formulaHash]; exists {
-		fmt.Println("formula already up to date!")
+		fmt.Printf(
+			"%s %s%s\n",
+			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+			efmt.AnsiWrap(": no op!  formula already up to date.", efmt.Ansi_textYellow),
+		)
 		return nil
 	}
+	fmt.Printf(
+		"%s %s%s\n",
+		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(": formula has updated!  evaluating...", efmt.Ansi_textYellow),
+	)
 
 	// write the pinned formula file as JSON
 	writeFormula(&pinnedFrm, pinFileName)
@@ -64,6 +75,12 @@ func Eval(c *cli.Context) error {
 	}
 
 	p.WriteFile(".reppl")
+	fmt.Printf(
+		"%s %s%s\n",
+		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(": done!  results saved.", efmt.Ansi_textYellow),
+	)
 
 	return nil
 }
