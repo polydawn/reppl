@@ -42,7 +42,8 @@ func Eval(c *cli.Context) error {
 	formulaHash := getHash(pinnedFrm)
 	if _, exists := p.Memos[formulaHash]; exists {
 		fmt.Printf(
-			"%s %s%s\n",
+			"%s %s %s%s\n",
+			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
 			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
 			efmt.AnsiWrap(": no op!  formula already up to date.", efmt.Ansi_textYellow),
@@ -50,7 +51,8 @@ func Eval(c *cli.Context) error {
 		return nil
 	}
 	fmt.Printf(
-		"%s %s%s\n",
+		"%s %s %s%s\n",
+		efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
 		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
 		efmt.AnsiWrap(": formula has updated!  evaluating...", efmt.Ansi_textYellow),
@@ -76,7 +78,8 @@ func Eval(c *cli.Context) error {
 
 	p.WriteFile(".reppl")
 	fmt.Printf(
-		"%s %s%s\n",
+		"%s %s %s%s\n",
+		efmt.AnsiWrap("└─", efmt.Ansi_textYellow),
 		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
 		efmt.AnsiWrap(": done!  results saved.", efmt.Ansi_textYellow),
@@ -116,7 +119,7 @@ func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 			Out: rrBuf,
 			Err: efmt.LinePrefixingWriter(
 				os.Stderr,
-				efmt.AnsiWrap("reppl eval >\t", efmt.Ansi_textBrightPurple),
+				efmt.AnsiWrap("│ reppl eval >\t", efmt.Ansi_textBrightPurple),
 			),
 		},
 	).Bake()
@@ -124,7 +127,7 @@ func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 
 	fmt.Fprintln(efmt.LinePrefixingWriter(
 		os.Stderr,
-		efmt.AnsiWrap("reppl eval ∴⟩\t", efmt.Ansi_textYellow),
+		efmt.AnsiWrap("│ reppl eval ∴⟩\t", efmt.Ansi_textYellow),
 	), rrBuf.String())
 	var rr rdef.RunRecord
 	dec := codec.NewDecoder(rrBuf, &codec.JsonHandle{})
