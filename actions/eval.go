@@ -84,7 +84,9 @@ func createPinnedFormula(p *model.Project, frm rdef.Formula) rdef.Formula {
 			ware, err := p.GetWareByTag(input.Tag)
 			if err == nil {
 				input.Hash = ware.Hash
-				input.Type = ware.Type
+				if input.Type == "" {
+					input.Type = ware.Type
+				}
 			}
 		}
 	}
