@@ -46,7 +46,7 @@ func Eval(c *cli.Context) error {
 			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
 			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
-			efmt.AnsiWrap(": no op!  formula already up to date.", efmt.Ansi_textYellow),
+			efmt.AnsiWrap(": no op!  formula previously evaluated and results are on record.", efmt.Ansi_textYellow),
 		)
 		return nil
 	}
@@ -55,7 +55,7 @@ func Eval(c *cli.Context) error {
 		efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
 		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
-		efmt.AnsiWrap(": formula has updated!  evaluating...", efmt.Ansi_textYellow),
+		efmt.AnsiWrap(": looks new, no memoized result!  evaluating...", efmt.Ansi_textYellow),
 	)
 
 	// write the pinned formula file as JSON
