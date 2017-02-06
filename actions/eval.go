@@ -14,6 +14,7 @@ import (
 	rdef "go.polydawn.net/repeatr/api/def"
 	rhitch "go.polydawn.net/repeatr/api/hitch"
 
+	"go.polydawn.net/reppl/lib/efmt"
 	"go.polydawn.net/reppl/model"
 )
 
@@ -96,12 +97,18 @@ func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 	cmd := Gosh("repeatr", "run", "--ignore-job-exit", formulaFileName,
 		Opts{
 			Out: rrBuf,
-			Err: os.Stderr,
+			Err: efmt.LinePrefixingWriter(
+				os.Stderr,
+				efmt.AnsiWrap("reppl eval >\t", efmt.Ansi_textBrightPurple),
+			),
 		},
 	).Bake()
 	cmd.Run()
 
-	fmt.Println(rrBuf.String())
+	fmt.Fprintln(efmt.LinePrefixingWriter(
+		os.Stderr,
+		efmt.AnsiWrap("reppl eval ∴⟩\t", efmt.Ansi_textYellow),
+	), rrBuf.String())
 	var rr rdef.RunRecord
 	dec := codec.NewDecoder(rrBuf, &codec.JsonHandle{})
 	err := dec.Decode(&rr)
