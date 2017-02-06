@@ -46,7 +46,7 @@ func Eval(c *cli.Context) error {
 			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
 			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
 			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
-			efmt.AnsiWrap(": no op!  formula previously evaluated and results are on record.", efmt.Ansi_textYellow),
+			efmt.AnsiWrap(": no op!  results are on record.", efmt.Ansi_textYellow),
 		)
 		return nil
 	}
