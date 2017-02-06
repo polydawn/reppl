@@ -24,7 +24,7 @@ func PutHash(c *cli.Context) error {
 	fmt.Printf(
 		"%s %s %s %s %s\n",
 		efmt.AnsiWrap("reppl put", efmt.Ansi_textBrightYellow),
-		efmt.AnsiWrap("hash", efmt.Ansi_textYellow),
+		efmt.AnsiWrap("hash:", efmt.Ansi_textYellow),
 		efmt.AnsiWrap(tag, efmt.Ansi_textYellow, efmt.Ansi_underline),
 		efmt.AnsiWrap("=", efmt.Ansi_textYellow),
 		efmt.AnsiWrap(hash, efmt.Ansi_textYellow, efmt.Ansi_underline),

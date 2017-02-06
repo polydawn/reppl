@@ -5,6 +5,7 @@ import (
 
 	"github.com/urfave/cli"
 
+	"go.polydawn.net/reppl/lib/efmt"
 	"go.polydawn.net/reppl/model"
 )
 
@@ -14,6 +15,11 @@ func Remove(c *cli.Context) error {
 	p := model.FromFile(".reppl")
 	p.DeleteTag(tag)
 	p.WriteFile(".reppl")
-	fmt.Println("removed", tag)
+	fmt.Printf(
+		"%s%s %s\n",
+		efmt.AnsiWrap("reppl rm", efmt.Ansi_textBrightYellow),
+		efmt.AnsiWrap(": removed tag", efmt.Ansi_textYellow),
+		efmt.AnsiWrap(tag, efmt.Ansi_textYellow, efmt.Ansi_underline),
+	)
 	return nil
 }
