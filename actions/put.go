@@ -15,27 +15,39 @@ func PutHash(c *cli.Context) error {
 	hash := c.Args().Get(1)
 	warehouseStrArg_isSet := c.IsSet("warehouse")
 	warehouseStr := c.String("warehouse")
+	kindStrArg_isSet := c.IsSet("kind")
+	kindStr := c.String("kind")
 
 	p := model.FromFile(".reppl")
+
+	wareType := "tar"
+	if kindStrArg_isSet {
+		wareType = kindStr
+	}
 	ware := rdef.Ware{
-		Type: "tar",
+		Type: wareType,
 		Hash: hash,
 	}
 	p.PutManualTag(tag, ware)
+
 	if warehouseStrArg_isSet {
 		p.AppendWarehouseForWare(
 			ware,
 			rdef.WarehouseCoords{rdef.WarehouseCoord(warehouseStr)},
 		)
 	}
+
 	p.WriteFile(".reppl")
+
 	fmt.Printf(
-		"%s %s %s %s %s\n",
+		"%s %s %s %s %s%s%s\n",
 		efmt.AnsiWrap("reppl put", efmt.Ansi_textBrightYellow),
 		efmt.AnsiWrap("hash:", efmt.Ansi_textYellow),
 		efmt.AnsiWrap(tag, efmt.Ansi_textYellow, efmt.Ansi_underline),
 		efmt.AnsiWrap("=", efmt.Ansi_textYellow),
-		efmt.AnsiWrap(hash, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(ware.Type, efmt.Ansi_textYellow, efmt.Ansi_underline),
+		efmt.AnsiWrap(":", efmt.Ansi_textYellow),
+		efmt.AnsiWrap(ware.Hash, efmt.Ansi_textYellow, efmt.Ansi_underline),
 	)
 	return nil
 }
