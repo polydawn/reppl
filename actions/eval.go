@@ -120,6 +120,16 @@ func createPinnedFormula(p *model.Project, frm rdef.Formula) rdef.Formula {
 			}
 		}
 	}
+	// append any warehouses we know of
+	for _, input := range frm.Inputs {
+		ware := rdef.Ware{input.Type, input.Hash}
+		moreWarehouseCoords, err := p.GetWarehousesByWare(ware)
+		if err != nil {
+			// nbd if we don't have any.  hope the formula had some of its own; but if not, that error isn't for our layer to raise.
+			continue
+		}
+		input.Warehouses = append(input.Warehouses, moreWarehouseCoords...)
+	}
 	return frm
 }
 
