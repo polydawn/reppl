@@ -71,7 +71,7 @@ func (p *Project) PutManualTag(tag string, ware rdef.Ware) {
 	}
 }
 
-func (p *Project) PutManualWarehouse(ware rdef.Ware, moreCoords rdef.WarehouseCoords) {
+func (p *Project) AppendWarehouseForWare(ware rdef.Ware, moreCoords rdef.WarehouseCoords) {
 	coords, _ := p.Whereabouts[ware]
 	p.Whereabouts[ware] = append(coords, moreCoords...)
 }

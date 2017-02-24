@@ -18,6 +18,12 @@ func main() {
 				{
 					Name:   "hash",
 					Action: actions.PutHash,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "warehouse",
+							Usage: "A URL giving coordinates to a warehouse where we should be able to find this ware.",
+						},
+					},
 				},
 				{
 					Name:   "file",

@@ -13,6 +13,8 @@ import (
 func PutHash(c *cli.Context) error {
 	tag := c.Args().Get(0)
 	hash := c.Args().Get(1)
+	warehouseStrArg_isSet := c.IsSet("warehouse")
+	warehouseStr := c.String("warehouse")
 
 	p := model.FromFile(".reppl")
 	ware := rdef.Ware{
@@ -20,6 +22,12 @@ func PutHash(c *cli.Context) error {
 		Hash: hash,
 	}
 	p.PutManualTag(tag, ware)
+	if warehouseStrArg_isSet {
+		p.AppendWarehouseForWare(
+			ware,
+			rdef.WarehouseCoords{rdef.WarehouseCoord(warehouseStr)},
+		)
+	}
 	p.WriteFile(".reppl")
 	fmt.Printf(
 		"%s %s %s %s %s\n",
