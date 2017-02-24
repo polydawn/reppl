@@ -71,9 +71,18 @@ func Eval(c *cli.Context) error {
 
 	// save tagged outputs
 	for outputName, output := range frm.Outputs {
-		if output.Tag != "" {
-			p.PutResult(output.Tag, outputName, &rr)
+		if output.Tag == "" {
+			continue
 		}
+		p.PutResult(output.Tag, outputName, &rr)
+	}
+
+	// memorize all the warehouses that were listed as destinations for outputs
+	for outputName, output := range frm.Outputs {
+		if output.Tag == "" {
+			continue
+		}
+		p.AppendWarehouseForWare(rr.Results[outputName].Ware, output.Warehouses)
 	}
 
 	p.WriteFile(".reppl")
