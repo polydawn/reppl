@@ -11,9 +11,10 @@ import (
 )
 
 type Project struct {
-	Tags       map[string]ReleaseRecord   // map tag->{ware,backstory}
-	RunRecords map[string]*rdef.RunRecord // map rrhid->rr
-	Memos      map[string]string          // index frmhid->rrhid
+	Tags        map[string]ReleaseRecord           // map tag->{ware,backstory}
+	RunRecords  map[string]*rdef.RunRecord         // map rrhid->rr
+	Memos       map[string]string                  // index frmhid->rrhid
+	Whereabouts map[rdef.Ware]rdef.WarehouseCoords // map ware->warehousecoords
 }
 
 type ReleaseRecord struct {
@@ -25,6 +26,7 @@ func (p *Project) Init() {
 	p.Tags = make(map[string]ReleaseRecord)
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
+	p.Whereabouts = make(map[rdef.Ware]rdef.WarehouseCoords)
 }
 
 func (p *Project) WriteFile(filename string) {
@@ -70,6 +72,24 @@ func (p *Project) PutManualTag(tag string, ware rdef.Ware) {
 	}
 }
 
+func (p *Project) AppendWarehouseForWare(ware rdef.Ware, moreCoords rdef.WarehouseCoords) {
+	coords, _ := p.Whereabouts[ware]
+	// Append, putting the most recent ones first.
+	coords = append(moreCoords, coords...)
+	// Filter out any duplicates.
+	set := make(map[rdef.WarehouseCoord]struct{})
+	n := 0
+	for i, v := range coords {
+		_, exists := set[v]
+		if exists {
+			continue // leave it behind
+		}
+		set[v] = struct{}{}
+		coords[n] = coords[i]
+	}
+	p.Whereabouts[ware] = coords[0 : n+1]
+}
+
 func (p *Project) DeleteTag(tag string) {
 	_, hadPrev := p.Tags[tag]
 	if hadPrev {
@@ -87,6 +107,15 @@ func (p *Project) GetWareByTag(tag string) (rdef.Ware, error) {
 	}
 }
 
+func (p *Project) GetWarehousesByWare(ware rdef.Ware) (rdef.WarehouseCoords, error) {
+	coords, exists := p.Whereabouts[ware]
+	if exists {
+		return coords, nil
+	} else {
+		return nil, fmt.Errorf("no warehouses known for ware %s:%s", ware.Type, ware.Hash)
+	}
+}
+
 func (p *Project) PutResult(tag string, resultName string, rr *rdef.RunRecord) {
 	p.Tags[tag] = ReleaseRecord{rr.Results[resultName].Ware, rr.HID}
 	p.RunRecords[rr.HID] = rr
@@ -97,8 +126,10 @@ func (p *Project) PutResult(tag string, resultName string, rr *rdef.RunRecord) {
 func (p *Project) retainFilter() {
 	// "Sweep".  (The `Tags` map is the marks.)
 	oldRunRecords := p.RunRecords
+	oldWhereabouts := p.Whereabouts
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
+	p.Whereabouts = make(map[rdef.Ware]rdef.WarehouseCoords)
 	// Rebuild `RunRecords` by whitelisting prev values still ref'd by `Tags`.
 	for tag, release := range p.Tags {
 		if release.RunRecordHID == "" {
@@ -113,5 +144,13 @@ func (p *Project) retainFilter() {
 	// Rebuild `Memos` index from `RunRecords`.
 	for _, runRecord := range p.RunRecords {
 		p.Memos[runRecord.FormulaHID] = runRecord.HID
+	}
+	// Rebuild `Whereabouts` by whitelisting prev values still ref'd by `Tags`.
+	for _, release := range p.Tags {
+		whereabout, ok := oldWhereabouts[release.Ware]
+		if !ok {
+			continue // fine; not everything is required to have this metadata.
+		}
+		p.Whereabouts[release.Ware] = whereabout
 	}
 }

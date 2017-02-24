@@ -1,0 +1,11 @@
+## ignore wares produced in the pipeline.  they're binary artifacts and may be large!
+/wares/
+
+## ignore any debug unpacks.  we're just showing off; they're reproducible.
+/debug/
+
+## ignore the reppl state.  you could commit this, but the demo is entirely reproducible.
+/.reppl
+
+## ignore any pinned formulas.  we can reproduce them as well (the templates are committed).
+/*.frm.pin
