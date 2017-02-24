@@ -43,7 +43,16 @@ func main() {
 			Name:   "show",
 			Action: actions.Show,
 		},
-
+		{
+			Name:   "unpack",
+			Action: actions.Unpack,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "warehouse",
+					Usage: "Optional -- A URL giving coordinates to a warehouse where we should be able to find this ware.",
+				},
+			},
+		},
 		{
 			Name:   "rm",
 			Action: actions.Remove,
