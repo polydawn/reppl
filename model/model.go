@@ -26,6 +26,7 @@ func (p *Project) Init() {
 	p.Tags = make(map[string]ReleaseRecord)
 	p.RunRecords = make(map[string]*rdef.RunRecord)
 	p.Memos = make(map[string]string)
+	p.Whereabouts = make(map[rdef.Ware]rdef.WarehouseCoords)
 }
 
 func (p *Project) WriteFile(filename string) {
