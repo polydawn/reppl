@@ -74,7 +74,20 @@ func (p *Project) PutManualTag(tag string, ware rdef.Ware) {
 
 func (p *Project) AppendWarehouseForWare(ware rdef.Ware, moreCoords rdef.WarehouseCoords) {
 	coords, _ := p.Whereabouts[ware]
-	p.Whereabouts[ware] = append(coords, moreCoords...)
+	// Append, putting the most recent ones first.
+	coords = append(moreCoords, coords...)
+	// Filter out any duplicates.
+	set := make(map[rdef.WarehouseCoord]struct{})
+	n := 0
+	for i, v := range coords {
+		_, exists := set[v]
+		if exists {
+			continue // leave it behind
+		}
+		set[v] = struct{}{}
+		coords[n] = coords[i]
+	}
+	p.Whereabouts[ware] = coords[0 : n+1]
 }
 
 func (p *Project) DeleteTag(tag string) {
