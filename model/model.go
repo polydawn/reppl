@@ -98,7 +98,7 @@ func (p *Project) GetWarehousesByWare(ware rdef.Ware) (rdef.WarehouseCoords, err
 	if exists {
 		return coords, nil
 	} else {
-		return nil, errors.New("not found")
+		return nil, fmt.Errorf("no warehouses known for ware %s:%s", ware.Type, ware.Hash)
 	}
 }
 
