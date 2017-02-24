@@ -23,6 +23,10 @@ func main() {
 							Name:  "warehouse",
 							Usage: "A URL giving coordinates to a warehouse where we should be able to find this ware.",
 						},
+						cli.StringFlag{
+							Name:  "kind",
+							Usage: "The kind of transit format this ware is.  Defaults to tar if unspecified.",
+						},
 					},
 				},
 				{
