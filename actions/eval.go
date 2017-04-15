@@ -33,7 +33,7 @@ func Eval(c *cli.Context) error {
 	var frm rdef.Formula
 	rhitch.DecodeYaml(f, &frm)
 
-	envVars := c.StringSlice("environment")
+	envVars := c.StringSlice("env")
 	for _, item := range envVars {
 		splits := strings.SplitN(item, "=", 2)
 		if len(splits) != 2 {
