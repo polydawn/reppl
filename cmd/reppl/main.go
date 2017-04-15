@@ -38,6 +38,12 @@ func main() {
 		{
 			Name:   "eval",
 			Action: actions.Eval,
+			Flags: []cli.Flag{
+				cli.StringSliceFlag{
+					Name:  "env, e",
+					Usage: "Apply additional environment vars to formula before launch.  Format like '-e KEY=val'",
+				},
+			},
 		},
 		{
 			Name:   "init",

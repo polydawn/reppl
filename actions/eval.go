@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 
 	. "github.com/polydawn/gosh"
 	"github.com/ugorji/go/codec"
@@ -31,6 +32,16 @@ func Eval(c *cli.Context) error {
 	// decode the formula file into a formula
 	var frm rdef.Formula
 	rhitch.DecodeYaml(f, &frm)
+
+	envVars := c.StringSlice("environment")
+	for _, item := range envVars {
+		splits := strings.SplitN(item, "=", 2)
+		if len(splits) != 2 {
+			panic(fmt.Sprintf("Invalid environment variable '%s' must be of format 'NAME=VALUE'", item))
+		}
+		// inject environment variable into formula
+		frm.Action.Env[splits[0]] = splits[1]
+	}
 
 	// get our project definition
 	p := model.FromFile(".reppl")
