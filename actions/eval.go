@@ -26,6 +26,7 @@ func Eval(c *cli.Context) error {
 		return fmt.Errorf("Incorrect Usage.  Missing required argument for formula filename.")
 	}
 	pinFileName := formulaFileName + ".pin"
+	forceEval := c.Bool("force")
 
 	// open the formula file
 	f, err := os.Open(formulaFileName)
@@ -56,7 +57,9 @@ func Eval(c *cli.Context) error {
 
 	// check if this formula is up to date
 	formulaHash := getHash(pinnedFrm)
-	if _, exists := p.Memos[formulaHash]; exists {
+	_, memoExists := p.Memos[formulaHash]
+	switch {
+	case memoExists && !forceEval:
 		fmt.Printf(
 			"%s %s %s%s\n",
 			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
@@ -65,14 +68,23 @@ func Eval(c *cli.Context) error {
 			efmt.AnsiWrap(": no op!  results are on record.", efmt.Ansi_textYellow),
 		)
 		return nil
+	case memoExists && forceEval:
+		fmt.Printf(
+			"%s %s %s%s\n",
+			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
+			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+			efmt.AnsiWrap(": results are on record, but eval forced.  evaluating...", efmt.Ansi_textYellow),
+		)
+	default:
+		fmt.Printf(
+			"%s %s %s%s\n",
+			efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
+			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+			efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
+			efmt.AnsiWrap(": looks new, no memoized result!  evaluating...", efmt.Ansi_textYellow),
+		)
 	}
-	fmt.Printf(
-		"%s %s %s%s\n",
-		efmt.AnsiWrap("┌─", efmt.Ansi_textYellow),
-		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
-		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
-		efmt.AnsiWrap(": looks new, no memoized result!  evaluating...", efmt.Ansi_textYellow),
-	)
 
 	// write the pinned formula file as JSON
 	writeFormula(&pinnedFrm, pinFileName)

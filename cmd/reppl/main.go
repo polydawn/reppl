@@ -40,6 +40,10 @@ func main() {
 			Name:   "eval",
 			Action: actions.Eval,
 			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "force, f",
+					Usage: "Optional -- Force this formula to *always* be run, even if we have a memoized result for its current setup.",
+				},
 				cli.StringSliceFlag{
 					Name:  "env, e",
 					Usage: "Apply additional environment vars to formula before launch.  Format like '-e KEY=val'",
