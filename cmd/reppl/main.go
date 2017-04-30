@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli"
 
 	"go.polydawn.net/reppl/actions"
+	"go.polydawn.net/reppl/lib/efmt"
 )
 
 func main() {
@@ -68,6 +69,9 @@ func main() {
 			Action: actions.Remove,
 		},
 	}
+
+	cli.ErrWriter = efmt.LineFlankingWriter(os.Stderr,
+		efmt.Ansi(efmt.Ansi_textBrightRed), efmt.Ansi(efmt.Ansi_reset))
 
 	app.Run(os.Args)
 }

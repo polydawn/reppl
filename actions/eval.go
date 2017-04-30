@@ -20,12 +20,17 @@ import (
 )
 
 func Eval(c *cli.Context) error {
-	// open the formula file
+	// parse args.
 	formulaFileName := c.Args().Get(0)
+	if formulaFileName == "" {
+		return fmt.Errorf("Incorrect Usage.  Missing required argument for formula filename.")
+	}
 	pinFileName := formulaFileName + ".pin"
+
+	// open the formula file
 	f, err := os.Open(formulaFileName)
 	if err != nil {
-		panic("could not open formula")
+		return fmt.Errorf("Could not open formula file at %q", formulaFileName)
 	}
 	defer f.Close()
 
