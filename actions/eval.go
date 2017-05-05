@@ -19,6 +19,8 @@ import (
 	"go.polydawn.net/reppl/model"
 )
 
+const RUN_RECORD_EXIT_CODE_KEY = "$exitcode"
+
 func Eval(c *cli.Context) error {
 	// parse args.
 	formulaFileName := c.Args().Get(0)
@@ -92,37 +94,63 @@ func Eval(c *cli.Context) error {
 	// make repeatr go now!
 	rr := invokeRepeatr(pinFileName)
 
-	// add the formula hash to the run record
-	rr.FormulaHID = formulaHash
-	// add the run record hash to the run record
-	rr.HID = getHash(rr)
+	exitCode := rr.Results[RUN_RECORD_EXIT_CODE_KEY].Hash
+	evalSuccess := exitCode == "0"
 
-	// save tagged outputs
-	for outputName, output := range frm.Outputs {
-		if output.Tag == "" {
-			continue
-		}
-		p.PutResult(output.Tag, outputName, &rr)
+	exitStatusColor := efmt.Ansi_textYellow
+	exitStatusBrightColor := efmt.Ansi_textBrightYellow
+
+	if !evalSuccess {
+		exitStatusColor = efmt.Ansi_textRed
+		exitStatusBrightColor = efmt.Ansi_textBrightRed
 	}
 
-	// memorize all the warehouses that were listed as destinations for outputs
-	for outputName, output := range frm.Outputs {
-		if output.Tag == "" {
-			continue
+	if evalSuccess {
+		// add the formula hash to the run record
+		rr.FormulaHID = formulaHash
+
+		// add the run record hash to the run record
+		rr.HID = getHash(rr)
+
+		// save tagged outputs
+		for outputName, output := range frm.Outputs {
+			if output.Tag == "" {
+				continue
+			}
+			p.PutResult(output.Tag, outputName, &rr)
 		}
-		p.AppendWarehouseForWare(rr.Results[outputName].Ware, output.Warehouses)
+
+		// memorize all the warehouses that were listed as destinations for outputs
+		for outputName, output := range frm.Outputs {
+			if output.Tag == "" {
+				continue
+			}
+			p.AppendWarehouseForWare(rr.Results[outputName].Ware, output.Warehouses)
+		}
+		p.WriteFile(".reppl")
+
+		fmt.Printf(
+			"%s %s %s\n",
+			efmt.AnsiWrap("├─", efmt.Ansi_textYellow),
+			efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
+			efmt.AnsiWrap("results saved", efmt.Ansi_textYellow),
+		)
 	}
 
-	p.WriteFile(".reppl")
 	fmt.Printf(
-		"%s %s %s%s\n",
-		efmt.AnsiWrap("└─", efmt.Ansi_textYellow),
-		efmt.AnsiWrap("reppl eval", efmt.Ansi_textBrightYellow),
-		efmt.AnsiWrap(formulaFileName, efmt.Ansi_textYellow, efmt.Ansi_underline),
-		efmt.AnsiWrap(": done!  results saved.", efmt.Ansi_textYellow),
+		"%s %s %s%s%s\n",
+		efmt.AnsiWrap("└─", exitStatusColor),
+		efmt.AnsiWrap("reppl eval", exitStatusBrightColor),
+		efmt.AnsiWrap(formulaFileName, exitStatusColor, efmt.Ansi_underline),
+		efmt.AnsiWrap(": exitcode=", exitStatusColor),
+		efmt.AnsiWrap(exitCode, exitStatusColor),
 	)
 
-	return nil
+	if !evalSuccess {
+		os.Exit(1)
+	}
+
+	return err
 }
 
 func getHash(v interface{}) string {
@@ -177,7 +205,7 @@ func invokeRepeatr(formulaFileName string) rdef.RunRecord {
 	fmt.Fprintln(efmt.LinePrefixingWriter(
 		os.Stderr,
 		efmt.AnsiWrap("│ reppl eval ∴⟩\t", efmt.Ansi_textYellow),
-	), rrBuf.String())
+	), strings.TrimSpace(rrBuf.String()))
 	var rr rdef.RunRecord
 	dec := codec.NewDecoder(rrBuf, &codec.JsonHandle{})
 	err := dec.Decode(&rr)
