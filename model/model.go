@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/ugorji/go/codec"
 	rdef "go.polydawn.net/repeatr/api/def"
@@ -15,6 +16,13 @@ type Project struct {
 	RunRecords  map[string]*rdef.RunRecord         // map rrhid->rr
 	Memos       map[string]string                  // index frmhid->rrhid
 	Whereabouts map[rdef.Ware]rdef.WarehouseCoords // map ware->warehousecoords
+}
+
+type projectOutput struct {
+	Tags        map[string]ReleaseRecord
+	RunRecords  map[string]*rdef.RunRecord
+	Memos       map[string]string
+	Whereabouts map[string]rdef.WarehouseCoords
 }
 
 type ReleaseRecord struct {
@@ -39,8 +47,19 @@ func (p *Project) WriteFile(filename string) {
 	w := bufio.NewWriter(f)
 	defer w.Flush()
 
+	whereabouts := make(map[string]rdef.WarehouseCoords)
+	for ware, coords := range p.Whereabouts {
+		wareString := fmt.Sprintf("%s:%s", ware.Type, ware.Hash)
+		whereabouts[wareString] = coords
+	}
+
 	enc := codec.NewEncoder(w, &codec.JsonHandle{Indent: -1})
-	err = enc.Encode(p)
+	err = enc.Encode(&projectOutput{
+		Tags:        p.Tags,
+		RunRecords:  p.RunRecords,
+		Memos:       p.Memos,
+		Whereabouts: whereabouts,
+	})
 	if err != nil {
 		panic("could not write project file")
 	}
@@ -55,12 +74,29 @@ func FromFile(filename string) Project {
 	defer f.Close()
 
 	r := bufio.NewReader(f)
-	p := Project{}
+	intermediate := projectOutput{}
 	dec := codec.NewDecoder(r, &codec.JsonHandle{})
-	err = dec.Decode(&p)
+	err = dec.Decode(&intermediate)
 	if err != nil {
 		panic("error reading project file")
 	}
+
+	whereabouts := make(map[rdef.Ware]rdef.WarehouseCoords)
+	for wareStr, coords := range intermediate.Whereabouts {
+		parts := strings.SplitN(wareStr, ":", 2)
+		if len(parts) != 2 {
+			panic(fmt.Sprintf("Invalid ware key string: %s\n", parts))
+		}
+		ware := rdef.Ware{Type: parts[0], Hash: parts[1]}
+		whereabouts[ware] = coords
+	}
+	p := Project{
+		Tags:        intermediate.Tags,
+		RunRecords:  intermediate.RunRecords,
+		Memos:       intermediate.Memos,
+		Whereabouts: whereabouts,
+	}
+
 	return p
 }
 
