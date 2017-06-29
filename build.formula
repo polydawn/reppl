@@ -31,3 +31,6 @@ outputs:
 	"/task/output":
 		type: "dir"
 		silo: "file:///opt/reppl/"
+		filters:
+			- uid 0
+			- gid 0
