@@ -20,4 +20,14 @@ action:
 			export GOROOT=/app/go/go
 			export PATH=$PATH:/app/go/go/bin
 
+			## Build and self-test.
 			./goad
+
+			## Shuffle for packaging.
+			mkdir output
+			cp -r bin/ output/
+			cp README.md LICENSE output/
+outputs:
+	"/task/output":
+		type: "dir"
+		silo: "file:///opt/reppl/"
