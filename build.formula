@@ -7,6 +7,10 @@ inputs:
 		type: "tar"
 		hash: "jZ8NkMmCPUb5rTHtjBLZEe0usTSDjgGfD71hN07wuuPfkoqG6pLB0FR4GKmQRAva"
 		silo: "https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz"
+	"/task":
+		type: "git"
+		hash: "7566e337bc90d1863d823e2baeb80f4e547e85f3"
+		silo: "https://github.com/polydawn/reppl"
 action:
 	command:
 		- "/bin/bash"
@@ -16,5 +20,17 @@ action:
 			export GOROOT=/app/go/go
 			export PATH=$PATH:/app/go/go/bin
 
-			./goad install
-			./goad test
+			## Build and self-test.
+			./goad
+
+			## Shuffle for packaging.
+			mkdir output
+			cp -r bin/ output/
+			cp README.md LICENSE output/
+outputs:
+	"/task/output":
+		type: "dir"
+		silo: "file:///opt/reppl/"
+		filters:
+			- uid 0
+			- gid 0
