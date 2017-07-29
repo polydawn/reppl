@@ -1,4 +1,4 @@
-reppl
+reppl [![GoDoc](https://godoc.org/github.com/polydawn/reppl?status.svg)](https://godoc.org/github.com/polydawn/reppl)
 =====
 
 The simplest possible REPeatable project PipeLine.
